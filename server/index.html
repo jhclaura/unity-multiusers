@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>
+			multi
+		</title>
+		<!-- <link rel="stylesheet" type="text/css" href="css/style.css"> -->
+	</head>
+	<body>
+		<div id="render-canvas"></div>
+
+		<div>
+			<input type="text" id="playerName" placeholder="Who's this lucky one ready to eat?"></input>
+			<a id="sendLink" style="cursor: pointer;" onclick="sendIOMsg();">Start</a>
+		</div>
+		<script src="js/lib/three.js"></script>
+		<script src="js/lib/Detector.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+
+		<script type="text/javascript">
+			//device detection
+			//source: http://stackoverflow.com/questions/3514784/what-is-the-best-way-to-detect-a-mobile-device-in-jquery
+			var isMobile = false; //initiate as false
+			var whichMobile = "";
+			if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+				isMobile = true;
+			}
+			console.log("isMobile: " + isMobile);
+
+			// tell android or iOS
+			if( /Android/i.test(navigator.userAgent) ) {
+				console.log("I'm android!");
+				whichMobile = "android";
+			}
+			if( /iPhone|iPad|iPod/i.test(navigator.userAgent) ) {
+				console.log("I'm iOS!");
+				whichMobile = "iOS_mobile";
+			}
+
+			// if it's desktop, create click.gif div for PointerlockAPI
+			if( !isMobile ) {
+				var clickDiv = document.createElement('div');
+				clickDiv.id = "blocker";
+				// clickDiv.style = "display: none;";
+				document.getElementsByTagName("body")[0].appendChild(clickDiv);
+
+				var fingerImg = document.createElement('img');
+				fingerImg.setAttribute("src", "images/click.gif");
+				fingerImg.setAttribute("width", "60");
+				fingerImg.setAttribute("height", "60");
+				var ins = document.createElement('div');
+				ins.id = "instructions";
+				ins.appendChild(fingerImg);
+
+				clickDiv.appendChild(ins);
+			}
+
+			// DETECT
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+			//
+			function byId(_id) {
+				return document.getElementById(_id);
+			}
+
+			function byClass(_class) {
+				return document.getElementsByClassName(_class);
+			}
+
+			var renderCanvas = byId("render-canvas");
+			var blockerDiv = byId("blocker");
+		</script>
+
+		<script type="text/javascript">
+
+			// load socket.io-client, and then connect
+			// default to try to connect to the host that serves the page
+			var socket = io();
+
+			// User setting
+			var username = "";
+			var connected = false;
+			var playerNameInput = byId("playerName");
+
+			var whoIamInLife = -1, initEnvironment = false;
+			var meInWorld = -1;
+			var totalPplInWorldsCount = 0, totalVisitCount = 0;
+			var currentPplAmount = 0, addNewPlayerYet = false;
+			var updatePreviousPlayer = false;
+			var trulyFullyStart = false;
+
+			var sendIOMsg = function(){
+				console.log('click!');
+
+				if(!connected){
+					// username
+					if(playerNameInput.value == username){
+						username = "Anonymous";
+					} else {
+						username = playerNameInput.value;
+					}
+					// send username to server
+					socket.emit('new player', username);
+				} else {
+					// message
+					var msg = playerNameInput.value;
+					if(msg != ""){
+						socket.emit('new message', msg);
+						console.log('Send message: ' + msg);
+					}
+				}
+				
+				playerNameInput.value = "";
+				playerNameInput.placeholder = "Msg to IO server";
+
+				// move "create self" after get the index
+				// lateInit();
+			}
+
+			// SOCKET_EVENTS
+			socket.on('login', function(data){
+				connected = true;
+
+				// Get Index from server
+				whoIamInLife = data.index;
+				AssignIndex();
+				console.log("Connected to IO server! I'm #" + whoIamInLife + "in life, total num of players: " + data.numPlayers);
+
+				// for(var i=0; i<data.allPlayers.length; i++){
+				// 	console.log("Add history player: " + data.allPlayers[i].username);
+				// }
+
+				lateInit();
+			});
+
+			socket.on('update history', function(data){
+				if(!updatePreviousPlayer){
+					for(var i=0; i<data.allPlayers.length; i++){
+						var oldPlayerStartPos = new THREE.Vector3(
+							data.allPlayers[i].startX, 
+							data.allPlayers[i].startY, 
+							data.allPlayers[i].startZ
+						);
+						var oldHex = data.allPlayers[i].myHex;
+						var oldIndex = data.allPlayers[i].index;
+						var oldPlayerName = data.allPlayers[i].username;
+
+						var oldPlayer = new SimplePerson( oldPlayerStartPos, oldHex, oldIndex, oldPlayerName );
+						dailyLifePlayerDict[ oldIndex ] = oldPlayer;
+						console.log("Create history player: #" + data.allPlayers[i].index + "-" + data.allPlayers[i].username);
+					}
+					updatePreviousPlayer = true;
+				}				
+			});
+			
+			socket.on('new message', function(data){
+				console.log(data.username + " sends msg: " + data.message);
+			});
+
+			socket.on('player joined', function(data){
+				if (!trulyFullyStart) return;
+
+				// Create Player
+				var newPlayerStartPos = new THREE.Vector3(
+					data.transform.posX,
+					data.transform.posY,
+					data.transform.posZ
+				);
+
+				var newGuy = new SimplePerson(newPlayerStartPos, new THREE.Color(), data.index, data.username);
+				dailyLifePlayerDict[data.index] = newGuy;
+
+				currentPplAmount ++;
+				console.log("New player: " + data.username + " joined! Now total num of players: " + data.numPlayers);
+			});
+
+			socket.on('player left', function(data){
+				console.log("Player: " + data.username + " left! Now total player num: " + data.numPlayers);
+
+				removePlayer(data.index);
+				console.log('removePlayer #' + data.index);
+			});
+
+			socket.on('update position', function(data){
+				var playerPosX = data.posX;
+				var playerPosY = data.posY;
+				var playerPosZ = data.posZ;
+
+				var playerQ = new THREE.Quaternion(
+					data.quaX,
+					data.quaY,
+					data.quaZ,
+					data.quaW
+				);
+
+				if( dailyLifePlayerDict[ data.index ] ){
+					if(data.type=="three")
+						dailyLifePlayerDict[ data.index ].update( playerPosX, playerPosY, playerPosZ, playerQ );
+					else
+						dailyLifePlayerDict[ data.index ].updateU( playerPosX, playerPosY, playerPosZ, playerQ );
+				}					
+				/*
+				console.log("Player: " + data.username
+					+ " position x: " + playerPosX
+					+ ", y: " + playerPosY
+					+ ", z: " + playerPosZ);*/
+			});
+
+			//
+			function byId(_id) {
+				return document.getElementById(_id);
+			}
+			function byClass(_class) {
+				return document.getElementByClassName(_class);
+			}
+		</script>
+
+		<!-- WebVR Boilerplate -->
+		<script src="js/lib/effects/VREffect.js"></script>
+		<script src="js/lib/webvr-polyfill.js"></script>
+		<script src="js/lib/webvr-manager.js"></script>
+
+		<script type="text/javascript" src="js/lib/BufferLoader.js"></script>
+		<script type="text/javascript" src="js/lib/ImprovedNoise.js"></script>
+		<script type="text/javascript" src="js/lib/stats.min.js"></script>
+		<script type="text/javascript" src="js/lib/threex.dynamictexture.js"></script>
+
+		<script type="text/javascript" src="js/sample.js"></script>
+		<script type="text/javascript" src="js/wave.js"></script>
+		<script type="text/javascript" src="js/SimplePerson.js"></script>
+
+		<script src="js/controls/DeviceControls.js"></script>
+		<script src="js/script_functions.js"></script>
+		<script src="js/script_setup_clean.js"></script>
+		<script src="js/script.js"></script>
+	</body>
+</html>

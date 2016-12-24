@@ -1,0 +1,158 @@
+@font-face {
+	font-family: StupidFont;
+	src: url(../font/Stupid.ttf);
+}
+
+body {
+	background-color: #000000;
+	width: 100%;
+	height: 100%;
+	margin: 0px;
+	padding: 0px;
+	overflow: hidden;
+	font-family: StupidFont;
+}
+
+/** {
+   -webkit-user-select: none;
+}*/
+
+#render-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    
+    -webkit-transition: opacity 2s;
+	-moz-transition: opacity 2s;
+	-o-transition: opacity 2s;
+	-ms-transition: opacity 2s;       
+	transition: opacity 2s;
+	opacity: 1;
+
+	user-select: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+}
+
+
+#render-canvas:-webkit-full-screen {
+    background-color: black !important;
+}
+
+#blocker {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+}
+
+#instructions {
+	width: 100%;
+	height: 100%;
+	text-align:center;
+	cursor: pointer;
+}
+
+#instructions:before {
+  content: ' ';
+  display: inline-block;
+  vertical-align: middle;
+  height: 100%;
+}
+
+#instructions img {
+  vertical-align: middle;
+  display: inline-block;
+  opacity: 0.9;
+}
+
+a {
+	color: #09ddcb;
+}
+
+h1, h2 {
+	color: #ffffff;
+}
+
+h1 {
+	margin-top: 0;
+}
+
+input {
+	text-align: center;
+}
+
+#splashPage {
+	/*position: absolute;*/
+	left:0; right:0; top:0; bottom:0;
+	margin: auto;
+	padding: 2em;	
+	line-height: 26px;
+	text-align:center;
+
+	font-size:16pt;
+	background: url("../images/poopPoster.gif") no-repeat center center fixed;
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;
+	/*background-repeat: repeat;*/
+}
+
+#aboutPage {
+	left:0; right:0; bottom:0; /*top:0; */
+	/*margin: auto;*/
+	padding: 5px;	
+	padding-left: 1em;
+	padding-right: 1em;
+	text-align: center;
+	font-size: 16pt;
+	background-color: #ffffff;
+	overflow: scroll;
+}
+
+#aboutPageDetail {
+	text-align: left;
+	padding-bottom: 1em;
+}
+
+#instructionDetail {
+	width: 100%;
+	padding: 0;
+}
+
+.insImg {
+	width: 24%;
+}
+
+/* For width 500px and smaller: */
+@media only screen and (max-width: 500px) {
+    .insImg {
+		width: 90%;
+	}
+	#aboutPageDetail {
+		max-height: 600px;
+		overflow-y: scroll !important;
+	}
+	#instructionDetail {
+		max-height: 600px;
+		overflow-y: scroll !important;
+	}
+}
+
+#finalBG {
+	background: url("../images/chalkboard.jpg") center center;
+	margin: auto;
+	/*height: 60%;*/
+	overflow:auto;
+
+	width: 60%;
+	text-align:center;
+	padding: 1em;
+
+	font-size:1.3em;
+	color: white;
+	display: none;
+	/*background-repeat: repeat;*/
+}
