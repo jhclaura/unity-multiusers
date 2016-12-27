@@ -29,13 +29,9 @@ ExportedObj/
 *.userprefs
 *.pidb
 *.svd
-*.userprefs
 *.csproj
-*.pidb
 *.suo
-*.sln
 *.user
-*.unityproj
 *.booproj
 .vs/
 /.idea*/
@@ -56,12 +52,5 @@ sysinfo.txt
 .Trashes
 Icon?
 ehthumbs.db
-Thumbs.db
-ehthumbs.db
 [Tt]humbs.db
 [Dd]esktop.ini
-
-# =============== #
-# Xcode generated #
-# =============== #
-[Tt]est/
