@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class PlayerManagement : MonoBehaviour {
@@ -25,6 +26,20 @@ public class PlayerManagement : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 	
+	}
+
+	public void InitPlayer(int _index, string _name) {
+		color = new Color ();
+
+		whoIam = _index;
+		username = _name;
+		nameTag.name = username + " name tag";
+		nameTag.GetComponent<Text> ().text = username;
+
+		/* ref
+		selfPlayerMgmt.nameTag = Instantiate(nameTagPrefab);
+		selfPlayerMgmt.nameTag.transform.SetParent (worldCanvas.transform);		
+		*/
 	}
 
 	public void OnStartLocalPlayer() {

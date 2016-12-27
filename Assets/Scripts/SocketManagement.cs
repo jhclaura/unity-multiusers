@@ -125,6 +125,7 @@ public class SocketManagement : MonoBehaviour {
 	void OnLogin(Socket socket, Packet packet, params object[] args)
 	{
 		connected = true;
+
 		Dictionary<string, object> data = args [0] as Dictionary<string, object>;
 		whoIamInLife = GetInt (data["index"]);
 		int n_p = GetInt (data["numPlayers"]);
@@ -137,15 +138,19 @@ public class SocketManagement : MonoBehaviour {
 		selfPlayer = Instantiate(simplePlayerPrefab);
 		selfPlayer.name = "ME #"+whoIamInLife + " " + myName;
 		selfPlayerMgmt = selfPlayer.GetComponent<PlayerManagement> ();
+		selfPlayerMgmt.socketManagement = this;
+		selfPlayerMgmt.nameTag = Instantiate(nameTagPrefab);
+		selfPlayerMgmt.nameTag.transform.SetParent (worldCanvas.transform);
+
+		// move to PlayerManagement
+		/*
 		selfPlayerMgmt.color = new Color ();
 		selfPlayerMgmt.whoIam = whoIamInLife;
 		selfPlayerMgmt.username = myName;
-		selfPlayerMgmt.socketManagement = this;
-
-		selfPlayerMgmt.nameTag = Instantiate(nameTagPrefab);
 		selfPlayerMgmt.nameTag.name = selfPlayerMgmt.username + " name tag";
 		selfPlayerMgmt.nameTag.GetComponent<Text> ().text = myName;
-		selfPlayerMgmt.nameTag.transform.SetParent (worldCanvas.transform);
+		*/
+		selfPlayerMgmt.InitPlayer(whoIamInLife, myName);
 
 		selfPlayerMgmt.OnStartLocalPlayer ();
 
@@ -188,6 +193,7 @@ public class SocketManagement : MonoBehaviour {
 		Dictionary<string, object> data = args [0] as Dictionary<string, object>;
 		int numP = GetInt(data["numPlayers"]);
 		var username = data ["username"] as string;
+		var p_index = GetInt(data["index"]);
 		Dictionary<string, object> transform = data["transform"] as Dictionary<string, object>;
 
 		// create incoming player
@@ -195,18 +201,23 @@ public class SocketManagement : MonoBehaviour {
 			GetFloat(transform["startX"]), GetFloat(transform["startY"]), GetFloat(transform["startZ"])
 		);
 		GameObject newGuy = Instantiate (simplePlayerPrefab);
+		newGuy.name = "Player #"+ p_index + " " + username;
 		newGuy.transform.position = newPlayerStartPos;
 		PlayerManagement newGuyMgmt = newGuy.GetComponent<PlayerManagement> ();
+
+		newGuyMgmt.nameTag = Instantiate(nameTagPrefab);
+		newGuyMgmt.nameTag.transform.SetParent (worldCanvas.transform);
+		newGuyMgmt.nameTag.transform.position = newPlayerStartPos;
+
+		// move to PlayerManagement
+		newGuyMgmt.InitPlayer(p_index, username);
+		/*
 		//newGuyMgmt.color = (Color) data ["color"];
 		newGuyMgmt.whoIam = GetInt(data["index"]);
 		newGuyMgmt.username = data ["username"] as string;
-		newGuy.name = "Player #"+ newGuyMgmt.whoIam + " " + newGuyMgmt.username;
-
-		newGuyMgmt.nameTag = Instantiate(nameTagPrefab);
 		newGuyMgmt.nameTag.name = newGuyMgmt.username + " name tag";
 		newGuyMgmt.nameTag.GetComponent<Text> ().text = newGuyMgmt.username;
-		newGuyMgmt.nameTag.transform.SetParent (worldCanvas.transform);
-		newGuyMgmt.nameTag.transform.position = newPlayerStartPos;
+		*/
 
 		playerDict.Add (newGuyMgmt.whoIam, newGuy);
 
@@ -264,17 +275,23 @@ public class SocketManagement : MonoBehaviour {
 				GameObject oldGuy = Instantiate (simplePlayerPrefab);
 				oldGuy.transform.position = oldPlayerStartPos;
 				PlayerManagement oldGuyMgmt = oldGuy.GetComponent<PlayerManagement> ();
-				//newGuyMgmt.color = (Color) data ["color"];
-				oldGuyMgmt.whoIam = GetInt(a_p["index"]);
-				oldGuyMgmt.username = a_p ["username"] as string;
-				oldGuy.name = "Player #"+ oldGuyMgmt.whoIam + " " + oldGuyMgmt.username;
+				int p_index = GetInt (a_p ["index"]);
+				string p_name = a_p ["username"] as string;
+				oldGuy.name = "Player #"+ p_index + " " + p_name;
 
 				oldGuyMgmt.nameTag = Instantiate(nameTagPrefab);
-				oldGuyMgmt.nameTag.name = oldGuyMgmt.username + " name tag";
-				oldGuyMgmt.nameTag.GetComponent<Text> ().text = oldGuyMgmt.username;
 				oldGuyMgmt.nameTag.transform.SetParent (worldCanvas.transform);
 				oldGuyMgmt.nameTag.transform.position = oldPlayerStartPos;
 
+				// Move to PlayerManagement
+				oldGuyMgmt.InitPlayer( p_index, p_name);
+				/*
+				//newGuyMgmt.color = (Color) data ["color"];
+				oldGuyMgmt.whoIam = GetInt(a_p["index"]);
+				oldGuyMgmt.username = a_p ["username"] as string;
+				oldGuyMgmt.nameTag.name = oldGuyMgmt.username + " name tag";
+				oldGuyMgmt.nameTag.GetComponent<Text> ().text = oldGuyMgmt.username;
+				*/
 
 				playerDict.Add (oldGuyMgmt.whoIam, oldGuy);
 
