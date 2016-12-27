@@ -184,7 +184,7 @@ THREE.DeviceControls = function ( camera, worldCenter ) {
 
 	var PI_2 = Math.PI / 2;
 
-	this.moveSpeed = 0.12 / 8;
+	this.moveSpeed = 0.06 / 8;
 	this.jumpSpeed = 5;
 
 	var _q1 = new THREE.Quaternion();
