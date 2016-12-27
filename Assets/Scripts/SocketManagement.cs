@@ -40,6 +40,10 @@ public class SocketManagement : MonoBehaviour {
 	Dictionary<int, GameObject> playerDict = new Dictionary<int, GameObject>();
 	bool updatePreviousPlayer = false;
 
+	public GameObject menuCanvas;
+	public GameObject worldCanvas;
+	public GameObject nameTagPrefab;
+
 	void Awake() {
 		if (VRSettings.enabled) {
 			viveVR = true;
@@ -136,6 +140,12 @@ public class SocketManagement : MonoBehaviour {
 		selfPlayerMgmt.whoIam = whoIamInLife;
 		selfPlayerMgmt.username = myName;
 		selfPlayerMgmt.socketManagement = this;
+
+		selfPlayerMgmt.nameTag = Instantiate(nameTagPrefab);
+		selfPlayerMgmt.nameTag.name = selfPlayerMgmt.username + " name tag";
+		selfPlayerMgmt.nameTag.GetComponent<Text> ().text = myName;
+		selfPlayerMgmt.nameTag.transform.SetParent (worldCanvas.transform);
+
 		selfPlayerMgmt.OnStartLocalPlayer ();
 
 		// add to dict
@@ -190,6 +200,12 @@ public class SocketManagement : MonoBehaviour {
 		newGuyMgmt.whoIam = GetInt(data["index"]);
 		newGuyMgmt.username = data ["username"] as string;
 		newGuy.name = "Player #"+ newGuyMgmt.whoIam + " " + newGuyMgmt.username;
+
+		newGuyMgmt.nameTag = Instantiate(nameTagPrefab);
+		newGuyMgmt.nameTag.name = newGuyMgmt.username + " name tag";
+		newGuyMgmt.nameTag.GetComponent<Text> ().text = newGuyMgmt.username;
+		newGuyMgmt.nameTag.transform.SetParent (worldCanvas.transform);
+		newGuyMgmt.nameTag.transform.position = newPlayerStartPos;
 
 		playerDict.Add (newGuyMgmt.whoIam, newGuy);
 
@@ -251,6 +267,14 @@ public class SocketManagement : MonoBehaviour {
 				oldGuyMgmt.whoIam = GetInt(a_p["index"]);
 				oldGuyMgmt.username = a_p ["username"] as string;
 				oldGuy.name = "Player #"+ oldGuyMgmt.whoIam + " " + oldGuyMgmt.username;
+
+				oldGuyMgmt.nameTag = Instantiate(nameTagPrefab);
+				oldGuyMgmt.nameTag.name = oldGuyMgmt.username + " name tag";
+				oldGuyMgmt.nameTag.GetComponent<Text> ().text = oldGuyMgmt.username;
+				oldGuyMgmt.nameTag.transform.SetParent (worldCanvas.transform);
+				oldGuyMgmt.nameTag.transform.position = oldPlayerStartPos;
+
+
 				playerDict.Add (oldGuyMgmt.whoIam, oldGuy);
 
 				Debug.Log("Add history player: " + a_p["username"]);

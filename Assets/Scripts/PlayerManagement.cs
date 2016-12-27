@@ -15,6 +15,8 @@ public class PlayerManagement : MonoBehaviour {
 	public SocketManagement socketManagement;
 	public GameObject ViveCamRig;
 
+	public GameObject nameTag;
+
 	// Use this for initialization
 	void Start () {
 
@@ -29,6 +31,8 @@ public class PlayerManagement : MonoBehaviour {
 		playerHead.SetActive (false);
 		bodyMgmt.enabled = true;
 		bodyMgmt.socketManagement = socketManagement;
+
+		bodyMgmt.nameTag = nameTag;
 
 		if (socketManagement.viveVR) {
 			ViveCamRig.SetActive(true);
@@ -46,12 +50,15 @@ public class PlayerManagement : MonoBehaviour {
 		string type, float posX, float posY, float posZ,
 		float rotX, float rotY, float rotZ, float rotW
 	) {
+		Vector3 position = new Vector3 (posX, posY, posZ);
+		Quaternion rotation = new Quaternion (rotX, rotY, rotZ, rotW);
+
 		if (type == "three")
 		{
-			Vector3 position = new Vector3 (posX, posY, -posZ);
+			position.z *= -1;
 			player.transform.position = position;
 
-			Quaternion rotation = Quaternion.Euler (Vector3.up * -180f);
+			rotation = Quaternion.Euler (Vector3.up * -180f);
 			rotation *= new Quaternion (rotX, -rotY, -rotZ, rotW);
 
 			// Head
@@ -66,12 +73,12 @@ public class PlayerManagement : MonoBehaviour {
 		} 
 		else
 		{
-			Vector3 position = new Vector3 (posX, posY, posZ);
 			if (type == "vive")
 				position.y -= 2f;
 			player.transform.position = position;
 
-			Quaternion rotation = new Quaternion (rotX, rotY, rotZ, rotW);
+			//rotation = new Quaternion (rotX, rotY, rotZ, rotW);
+
 			// Head
 			// if(playerHead.activeSelf)
 				playerHead.transform.rotation = rotation;
@@ -80,6 +87,12 @@ public class PlayerManagement : MonoBehaviour {
 			rotation.x = 0;
 			rotation.z = 0;
 			playerBody.transform.rotation = rotation;
+		}
+
+		if (nameTag) {
+			position.y += 1.8f;
+			nameTag.transform.position = position;
+			nameTag.transform.localRotation = rotation;
 		}
 	}
 }

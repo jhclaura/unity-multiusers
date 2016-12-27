@@ -11,6 +11,8 @@ public class BodyManagement : MonoBehaviour {
 
 	Dictionary<string, object> trans;
 
+	public GameObject nameTag;
+
 	// Use this for initialization
 	void Start () {
 		trans = new Dictionary<string, object>();
@@ -67,6 +69,8 @@ public class BodyManagement : MonoBehaviour {
 				viveCam.transform.position.z
 			);
 			body.transform.localEulerAngles = new Vector3 (0f, viveCam.transform.eulerAngles.y, 0f);
+
+			UpdateNameTag (viveCam.transform.position, body.transform.localEulerAngles);
 			//}
 		} else {
 			trans ["posX"] = transform.position.x;
@@ -80,9 +84,19 @@ public class BodyManagement : MonoBehaviour {
 			trans ["quaW"] = eyeCam.transform.rotation.w;
 
 			body.transform.localEulerAngles = new Vector3 (0f, eyeCam.transform.eulerAngles.y, 0f);
+
+			UpdateNameTag (transform.position, body.transform.localEulerAngles);
 		}
 
 		socketManagement.Manager.Socket.Emit ("update position", trans);
 
+	}
+
+	void UpdateNameTag(Vector3 pos, Vector3 eulerRot){
+		if (nameTag) {
+			pos.y += 1.8f;
+			nameTag.transform.position = pos;
+			nameTag.transform.localEulerAngles = eulerRot;
+		}
 	}
 }
