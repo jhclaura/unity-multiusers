@@ -19,6 +19,7 @@ public class BodyManagement : MonoBehaviour {
 
 		if (socketManagement.viveVR)
 		{
+			trans ["type"] = "vive";
 			trans.Add ("posX", viveCam.transform.position.x);
 			trans.Add ("posY", viveCam.transform.position.y);
 			trans.Add ("posZ", viveCam.transform.position.z);
@@ -62,7 +63,7 @@ public class BodyManagement : MonoBehaviour {
 
 			body.transform.position = new Vector3 (
 				viveCam.transform.position.x, 
-				viveCam.transform.position.y-1f,
+				viveCam.transform.position.y-1.5f,
 				viveCam.transform.position.z
 			);
 			body.transform.localEulerAngles = new Vector3 (0f, viveCam.transform.eulerAngles.y, 0f);

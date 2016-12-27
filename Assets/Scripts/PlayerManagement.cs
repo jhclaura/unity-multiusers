@@ -67,6 +67,8 @@ public class PlayerManagement : MonoBehaviour {
 		else
 		{
 			Vector3 position = new Vector3 (posX, posY, posZ);
+			if (type == "vive")
+				position.y -= 2f;
 			player.transform.position = position;
 
 			Quaternion rotation = new Quaternion (rotX, rotY, rotZ, rotW);
