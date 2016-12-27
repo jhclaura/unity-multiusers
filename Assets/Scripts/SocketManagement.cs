@@ -90,8 +90,9 @@ public class SocketManagement : MonoBehaviour {
 	{
 		switch (State)
 		{
-			case ChatStates.Login:
+		case ChatStates.Login:
 				SetUserName ();
+				menuCanvas.SetActive (false);
 				break;
 
 			case ChatStates.Chat:

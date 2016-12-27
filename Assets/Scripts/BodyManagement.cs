@@ -52,7 +52,6 @@ public class BodyManagement : MonoBehaviour {
 
 		if (socketManagement.viveVR)
 		{
-			//if (viveCam.activeSelf) {
 			trans ["posX"] = viveCam.transform.position.x;
 			trans ["posY"] = viveCam.transform.position.y;
 			trans ["posZ"] = viveCam.transform.position.z;
@@ -71,8 +70,10 @@ public class BodyManagement : MonoBehaviour {
 			body.transform.localEulerAngles = new Vector3 (0f, viveCam.transform.eulerAngles.y, 0f);
 
 			UpdateNameTag (viveCam.transform.position, body.transform.localEulerAngles);
-			//}
-		} else {
+		} 
+		else 
+		{
+			// GVR
 			trans ["posX"] = transform.position.x;
 			trans ["posY"] = transform.position.y;
 			trans ["posZ"] = transform.position.z;
@@ -85,6 +86,12 @@ public class BodyManagement : MonoBehaviour {
 
 			body.transform.localEulerAngles = new Vector3 (0f, eyeCam.transform.eulerAngles.y, 0f);
 
+			// MOVE BY PRESSING SCREEN OR MOUSE
+			if (Input.touchCount > 0 || Input.GetMouseButton(0)){
+				//Debug.Log ("touch!");
+				transform.Translate(body.transform.forward * Time.deltaTime);
+			}
+
 			UpdateNameTag (transform.position, body.transform.localEulerAngles);
 		}
 
@@ -94,7 +101,10 @@ public class BodyManagement : MonoBehaviour {
 
 	void UpdateNameTag(Vector3 pos, Vector3 eulerRot){
 		if (nameTag) {
-			pos.y += 1.8f;
+			if (socketManagement.viveVR)
+				pos.y += 0.5f;
+			else
+				pos.y += 1.8f;
 			nameTag.transform.position = pos;
 			nameTag.transform.localEulerAngles = eulerRot;
 		}
