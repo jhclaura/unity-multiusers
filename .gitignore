@@ -54,3 +54,8 @@ Icon?
 ehthumbs.db
 [Tt]humbs.db
 [Dd]esktop.ini
+
+# ============== #
+# Node generated #
+# ============== #
+[Ss]erver/node_modules/
