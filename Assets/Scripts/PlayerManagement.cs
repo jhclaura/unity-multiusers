@@ -13,11 +13,11 @@ public class PlayerManagement : MonoBehaviour {
 	public GameObject eyeCamera;
 	public BodyManagement bodyMgmt;
 	public SocketManagement socketManagement;
+	public GameObject ViveCamRig;
 
 	// Use this for initialization
 	void Start () {
-		Vector3 startPosition = new Vector3 (Random.value*10f, 0f, Random.value*10f);
-		player.transform.position = startPosition;
+
 	}
 	
 	// Update is called once per frame
@@ -26,12 +26,20 @@ public class PlayerManagement : MonoBehaviour {
 	}
 
 	public void OnStartLocalPlayer() {
-		//eyeCamera.tag = "MainCamera";
-		eyeCamera.SetActive (true);
 		playerHead.SetActive (false);
 		bodyMgmt.enabled = true;
 		bodyMgmt.socketManagement = socketManagement;
-		GvrViewer.Create ();
+
+		if (socketManagement.viveVR) {
+			ViveCamRig.SetActive(true);
+		} else {
+			Vector3 startPosition = new Vector3 (Random.value*10f, 0f, Random.value*10f);
+			player.transform.position = startPosition;
+
+			//eyeCamera.tag = "MainCamera";
+			eyeCamera.SetActive (true);
+			GvrViewer.Create ();
+		}
 	}
 
 	public void UpdateTrans(
@@ -47,7 +55,7 @@ public class PlayerManagement : MonoBehaviour {
 			rotation *= new Quaternion (rotX, -rotY, -rotZ, rotW);
 
 			// Head
-			if(playerHead.activeSelf)
+			// if(playerHead.activeSelf) // doesn't need to check cuz socket.io's broadcast doesn't send to self
 				playerHead.transform.rotation = rotation;
 
 			// Body
@@ -63,7 +71,7 @@ public class PlayerManagement : MonoBehaviour {
 
 			Quaternion rotation = new Quaternion (rotX, rotY, rotZ, rotW);
 			// Head
-			if(playerHead.activeSelf)
+			// if(playerHead.activeSelf)
 				playerHead.transform.rotation = rotation;
 
 			// Body

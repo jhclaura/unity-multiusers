@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using BestHTTP;
 using BestHTTP.SocketIO;
 using UnityEngine.UI;
+using UnityEngine.VR;
 
 public class SocketManagement : MonoBehaviour {
 
@@ -15,6 +16,7 @@ public class SocketManagement : MonoBehaviour {
 		Chat
 	}
 
+	public bool viveVR;
 	public SocketManager Manager;
 	ChatStates State;
 	public string networkAddress;
@@ -37,6 +39,14 @@ public class SocketManagement : MonoBehaviour {
 
 	Dictionary<int, GameObject> playerDict = new Dictionary<int, GameObject>();
 	bool updatePreviousPlayer = false;
+
+	void Awake() {
+		if (VRSettings.enabled) {
+			viveVR = true;
+		} else {
+			viveVR = false;
+		}
+	}
 
 
 	// Use this for initialization
@@ -115,11 +125,13 @@ public class SocketManagement : MonoBehaviour {
 		int n_p = GetInt (data["numPlayers"]);
 		Debug.Log("Connected to IO server! player total num: " + n_p);
 
+		// disable main camera
+		mainCamera.SetActive (false);
+
 		// create player SELF
 		selfPlayer = Instantiate(simplePlayerPrefab);
 		selfPlayer.name = "ME #"+whoIamInLife + " " + myName;
 		selfPlayerMgmt = selfPlayer.GetComponent<PlayerManagement> ();
-		mainCamera.SetActive (false);
 		selfPlayerMgmt.color = new Color ();
 		selfPlayerMgmt.whoIam = whoIamInLife;
 		selfPlayerMgmt.username = myName;
@@ -202,7 +214,7 @@ public class SocketManagement : MonoBehaviour {
 	void OnUpdatePosition(Socket socket, Packet packet, params object[] args)
 	{
 		Dictionary<string, object> data = args [0] as Dictionary<string, object>;
-		string username = data ["username"] as string;
+		//string username = data ["username"] as string;
 		string transType = data ["type"] as string;
 		int index = GetInt(data ["index"]);
 
