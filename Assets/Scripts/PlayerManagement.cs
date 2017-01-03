@@ -21,13 +21,24 @@ public class PlayerManagement : MonoBehaviour {
 	[HideInInspector]
 	public GameObject nameTag;
 
+	private bool isLocalPlayer = false;
 	private BodyManagement bodyMgmt;
-	private Vector3 calPosition;
-	private Quaternion calRotation;
+	private Vector3 realPosition;
+	private Vector3 realTagPosition;
+	private Quaternion realRotation;
+	private Quaternion realBillboardRotation;
 
-	void Start()
+	void Update()
 	{
-		
+		if (isLocalPlayer)
+			return;
+
+		player.transform.position = Vector3.Lerp (player.transform.position, realPosition, 0.1f);
+		playerHead.transform.rotation = Quaternion.Lerp (playerHead.transform.rotation, realRotation, 0.1f);
+		playerBody.transform.rotation = Quaternion.Lerp (playerBody.transform.rotation, realBillboardRotation, 0.1f);
+
+		nameTag.transform.position = Vector3.Lerp (nameTag.transform.position, realTagPosition, 0.1f);
+		nameTag.transform.localRotation = Quaternion.Lerp (nameTag.transform.localRotation, realBillboardRotation, 0.1f);
 	}
 
 	public void InitPlayer(int _index, string _name)
@@ -42,6 +53,7 @@ public class PlayerManagement : MonoBehaviour {
 		
 	public void OnStartLocalPlayer()
 	{
+		isLocalPlayer = true;
 		playerHead.SetActive (false);	// no need for hear cuz can't see self
 		bodyMgmt = player.GetComponent<BodyManagement> ();
 		bodyMgmt.enabled = true;		// so to send transformation to Server
@@ -70,16 +82,14 @@ public class PlayerManagement : MonoBehaviour {
 		float rotX, float rotY, float rotZ, float rotW
 	)
 	{
-		calPosition.Set (posX, posY, posZ);
-		calRotation.Set (rotX, rotY, rotZ, rotW);
+		realPosition.Set (posX, posY, posZ);
+		realRotation.Set (rotX, rotY, rotZ, rotW);
 
 		if (type == "three")
 		{
-			calPosition.z *= -1;
-
-			calRotation = Quaternion.Euler (Vector3.up * -180f);
-			calRotation *= new Quaternion (rotX, -rotY, -rotZ, rotW);
-
+			realPosition.z *= -1;
+			realRotation = Quaternion.Euler (Vector3.up * -180f);
+			realRotation *= new Quaternion (rotX, -rotY, -rotZ, rotW);
 			/*
 			// Head
 			// if(playerHead.activeSelf) // doesn't need to check cuz socket.io's broadcast doesn't send to self
@@ -95,7 +105,7 @@ public class PlayerManagement : MonoBehaviour {
 		else
 		{
 			if (type == "vive")
-				calPosition.y -= 2f;
+				realPosition.y -= 2f;
 			/*
 			// Head
 			// if(playerHead.activeSelf)
@@ -116,22 +126,31 @@ public class PlayerManagement : MonoBehaviour {
 		calRotation.z = 0;
 		playerBody.transform.rotation = calRotation;
 		*/
-		player.transform.position = Vector3.Lerp (player.transform.position, calPosition, 0.1f);
-		playerHead.transform.rotation = Quaternion.Lerp (playerHead.transform.rotation, calRotation, 0.1f);
-		calRotation.x = 0;
-		calRotation.z = 0;
-		playerBody.transform.rotation = Quaternion.Lerp (playerBody.transform.rotation, calRotation, 0.1f);
+
+		//v.2 interpolation --> needs to be in Update()
+		/*
+		player.transform.position = Vector3.Lerp (player.transform.position, realPosition, 0.1f);
+		playerHead.transform.rotation = Quaternion.Lerp (playerHead.transform.rotation, realRotation, 0.1f);
+		realRotation.x = 0;
+		realRotation.z = 0;
+		playerBody.transform.rotation = Quaternion.Lerp (playerBody.transform.rotation, realRotation, 0.1f);
+		*/
+		realBillboardRotation.Set(0f, realRotation.y, 0f, realRotation.w);
 
 		if (nameTag)
 		{
-			calPosition.y += 1.8f;
-			//v.1 no interpolation
+			//realPosition.y += 1.8f;
+			// v.1 no interpolation
 			/*
 			nameTag.transform.position = calPosition;
 			nameTag.transform.localRotation = calRotation;
 			*/
-			nameTag.transform.position = Vector3.Lerp (nameTag.transform.position, calPosition, 0.1f);
-			nameTag.transform.localRotation = Quaternion.Lerp (nameTag.transform.localRotation, calRotation, 0.1f);
+			// v.2 --> needs to be in Update()
+			/*
+			nameTag.transform.position = Vector3.Lerp (nameTag.transform.position, realPosition, 0.1f);
+			nameTag.transform.localRotation = Quaternion.Lerp (nameTag.transform.localRotation, realRotation, 0.1f);
+			*/
+			realTagPosition.Set (realPosition.x, realPosition.y+1.8f, realPosition.z);
 		}
 	}
 }
