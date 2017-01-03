@@ -9,6 +9,12 @@ function SimplePerson( _pos, _color, _id, _name ) {
 	this.ahhRotation;
 	this.nname = _name;
 
+	// for interpolation
+	this.realPosition = new THREE.Vector3();
+	this.realRotation = new THREE.Quaternion();
+	this.realBillboardRotation = new THREE.Quaternion();
+	this.yaxisInQ = new THREE.Quaternion(0,Math.PI/2,0,0);
+
 	// construct physical existence
 	this.player = new THREE.Object3D();
 	this.pMat = new THREE.MeshLambertMaterial( { color: this.color, side: THREE.DoubleSide } );
@@ -124,5 +130,52 @@ SimplePerson.prototype.updateU = function( _playerLocX, _playerLocY, _playerLocZ
 	if(this.player.children[0]){
 		this.player.children[0].rotation.y = this.ahhRotation.y + Math.PI;
 	}
+}
 
+SimplePerson.prototype.updateReal = function( _playerLocX, _playerLocY, _playerLocZ, _playerQ ) {
+
+	this.realPosition.set(_playerLocX, _playerLocY, _playerLocZ);
+	this.realRotation.copy( _playerQ );
+
+	var newQ = _playerQ.clone();
+	newQ._x = 0;
+	newQ._z = 0;
+	newQ.normalize();
+	this.realBillboardRotation.copy(newQ);
+}
+
+SimplePerson.prototype.updateRealU = function( _playerLocX, _playerLocY, _playerLocZ, _playerQ ) {
+
+	this.realPosition.set(_playerLocX, _playerLocY, _playerLocZ * -1);
+
+	var newQ = _playerQ.clone();
+	newQ._y *= -1;
+	newQ._z *= -1;
+	newQ.normalize();
+	var v = new THREE.Euler();  
+	v.setFromQuaternion( newQ, 'YXZ' );
+	v.y += Math.PI;
+	this.realRotation.setFromEuler( v );
+
+	newQ._x = 0;
+	newQ._z = 0;
+	newQ.normalize();
+	v.setFromQuaternion( newQ, 'YXZ' );
+	v.y += Math.PI;
+	this.realBillboardRotation.setFromEuler( v );
+}
+
+SimplePerson.prototype.transUpdate = function() {
+
+	this.player.position.lerp(this.realPosition, 0.1);
+	
+	// head
+	if(this.player.children[1]) {
+		this.player.children[1].quaternion.slerp( this.realRotation, 0.2 );
+	}
+	
+	// body
+	if(this.player.children[0]){
+		this.player.children[0].quaternion.slerp( this.realBillboardRotation, 0.2 );
+	}
 }

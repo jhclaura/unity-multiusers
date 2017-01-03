@@ -194,11 +194,19 @@
 				);
 
 				if( dailyLifePlayerDict[ data.index ] ){
+					// v.1 no interpolation
+					/*
 					if(data.type=="three")
 						dailyLifePlayerDict[ data.index ].update( playerPosX, playerPosY, playerPosZ, playerQ );
 					else
 						dailyLifePlayerDict[ data.index ].updateU( playerPosX, playerPosY, playerPosZ, playerQ );
-				}					
+					*/
+					// v.2 with interpolation
+					if(data.type=="three")
+						dailyLifePlayerDict[ data.index ].updateReal ( playerPosX, playerPosY, playerPosZ, playerQ );
+					else
+						dailyLifePlayerDict[ data.index ].updateRealU ( playerPosX, playerPosY, playerPosZ, playerQ );
+				}
 				/*
 				console.log("Player: " + data.username
 					+ " position x: " + playerPosX

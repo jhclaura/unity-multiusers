@@ -303,6 +303,13 @@ function update()
 			// ...
 		}
 
+	// Update all the player
+	for( var p in dailyLifePlayerDict )
+	{
+		if(p != whoIamInLife)
+			dailyLifePlayerDict[p].transUpdate();
+	}
+
 	//
 	time = Date.now();
 }
