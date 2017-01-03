@@ -16,7 +16,7 @@ public class BodyManagement : MonoBehaviour {
 	public GameObject nameTag;
 
 	private Dictionary<string, object> trans;
-
+	private float updateInterval;
 
 	void Start ()
 	{
@@ -54,7 +54,7 @@ public class BodyManagement : MonoBehaviour {
 		if (!socketManagement.isConnected) // || !viveCam.activeSelf
 			return;
 
-		// UPDATE: self object transform
+		// UPDATE: local self object transform
 		if (socketManagement.isViveVR)
 		{
 			body.transform.position = new Vector3 (
@@ -78,32 +78,39 @@ public class BodyManagement : MonoBehaviour {
 		}
 
 		// SEND: transform data to Server
-		if (socketManagement.isViveVR)
+		// Network send rate ideal 9 fps
+		// ref: https://forum.unity3d.com/threads/unet-multiplayer-interpolation-and-latency-compensation.398102/
+		updateInterval += Time.deltaTime;
+		if(updateInterval > 0.11f) // 9 times per second (?)
 		{
-			trans ["posX"] = viveCam.transform.position.x;
-			trans ["posY"] = viveCam.transform.position.y;
-			trans ["posZ"] = viveCam.transform.position.z;
-			trans ["rotY"] = viveCam.transform.eulerAngles.y;
+			updateInterval = 0f;
 
-			trans ["quaX"] = viveCam.transform.rotation.x;
-			trans ["quaY"] = viveCam.transform.rotation.y;
-			trans ["quaZ"] = viveCam.transform.rotation.z;
-			trans ["quaW"] = viveCam.transform.rotation.w;
+			if (socketManagement.isViveVR)
+			{
+				trans ["posX"] = viveCam.transform.position.x;
+				trans ["posY"] = viveCam.transform.position.y;
+				trans ["posZ"] = viveCam.transform.position.z;
+				trans ["rotY"] = viveCam.transform.eulerAngles.y;
+
+				trans ["quaX"] = viveCam.transform.rotation.x;
+				trans ["quaY"] = viveCam.transform.rotation.y;
+				trans ["quaZ"] = viveCam.transform.rotation.z;
+				trans ["quaW"] = viveCam.transform.rotation.w;
+			}
+			else
+			{
+				trans ["posX"] = transform.position.x;
+				trans ["posY"] = transform.position.y;
+				trans ["posZ"] = transform.position.z;
+				trans ["rotY"] = transform.eulerAngles.y;
+
+				trans ["quaX"] = eyeCam.transform.rotation.x;
+				trans ["quaY"] = eyeCam.transform.rotation.y;
+				trans ["quaZ"] = eyeCam.transform.rotation.z;
+				trans ["quaW"] = eyeCam.transform.rotation.w;
+			}
+			socketManagement.Manager.Socket.Emit ("update position", trans);
 		}
-		else
-		{
-			trans ["posX"] = transform.position.x;
-			trans ["posY"] = transform.position.y;
-			trans ["posZ"] = transform.position.z;
-			trans ["rotY"] = transform.eulerAngles.y;
-
-			trans ["quaX"] = eyeCam.transform.rotation.x;
-			trans ["quaY"] = eyeCam.transform.rotation.y;
-			trans ["quaZ"] = eyeCam.transform.rotation.z;
-			trans ["quaW"] = eyeCam.transform.rotation.w;
-		}
-
-		socketManagement.Manager.Socket.Emit ("update position", trans);
 	}
 
 	void UpdateNameTag(Vector3 pos, Vector3 eulerRot){

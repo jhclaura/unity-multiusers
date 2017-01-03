@@ -22,6 +22,8 @@ public class PlayerManagement : MonoBehaviour {
 	public GameObject nameTag;
 
 	private BodyManagement bodyMgmt;
+	private Vector3 calPosition;
+	private Quaternion calRotation;
 
 	void Start()
 	{
@@ -66,51 +68,70 @@ public class PlayerManagement : MonoBehaviour {
 	public void UpdateTrans(
 		string type, float posX, float posY, float posZ,
 		float rotX, float rotY, float rotZ, float rotW
-	) {
-		Vector3 position = new Vector3 (posX, posY, posZ);
-		Quaternion rotation = new Quaternion (rotX, rotY, rotZ, rotW);
+	)
+	{
+		calPosition.Set (posX, posY, posZ);
+		calRotation.Set (rotX, rotY, rotZ, rotW);
 
 		if (type == "three")
 		{
-			position.z *= -1;
-			player.transform.position = position;
+			calPosition.z *= -1;
 
-			rotation = Quaternion.Euler (Vector3.up * -180f);
-			rotation *= new Quaternion (rotX, -rotY, -rotZ, rotW);
+			calRotation = Quaternion.Euler (Vector3.up * -180f);
+			calRotation *= new Quaternion (rotX, -rotY, -rotZ, rotW);
 
+			/*
 			// Head
 			// if(playerHead.activeSelf) // doesn't need to check cuz socket.io's broadcast doesn't send to self
-				playerHead.transform.rotation = rotation;
+			playerHead.transform.rotation = calRotation;
 
 			// Body
-			rotation.x = 0;
-			rotation.z = 0;
+			calRotation.x = 0;
+			calRotation.z = 0;
 			// need to normalize quaternion?
-			playerBody.transform.rotation = rotation;
+			playerBody.transform.rotation = calRotation;
+			*/
 		} 
 		else
 		{
 			if (type == "vive")
-				position.y -= 2f;
-			player.transform.position = position;
-
-			//rotation = new Quaternion (rotX, rotY, rotZ, rotW);
-
+				calPosition.y -= 2f;
+			/*
 			// Head
 			// if(playerHead.activeSelf)
-				playerHead.transform.rotation = rotation;
+			playerHead.transform.rotation = calRotation;
 
 			// Body
-			rotation.x = 0;
-			rotation.z = 0;
-			playerBody.transform.rotation = rotation;
+			calRotation.x = 0;
+			calRotation.z = 0;
+			playerBody.transform.rotation = calRotation;
+			*/
 		}
+
+		//v.1 no interpolation
+		/*
+		player.transform.position = calPosition;
+		playerHead.transform.rotation = calRotation;
+		calRotation.x = 0;
+		calRotation.z = 0;
+		playerBody.transform.rotation = calRotation;
+		*/
+		player.transform.position = Vector3.Lerp (player.transform.position, calPosition, 0.1f);
+		playerHead.transform.rotation = Quaternion.Lerp (playerHead.transform.rotation, calRotation, 0.1f);
+		calRotation.x = 0;
+		calRotation.z = 0;
+		playerBody.transform.rotation = Quaternion.Lerp (playerBody.transform.rotation, calRotation, 0.1f);
 
 		if (nameTag)
 		{
-			position.y += 1.8f;
-			nameTag.transform.position = position;
-			nameTag.transform.localRotation = rotation;
+			calPosition.y += 1.8f;
+			//v.1 no interpolation
+			/*
+			nameTag.transform.position = calPosition;
+			nameTag.transform.localRotation = calRotation;
+			*/
+			nameTag.transform.position = Vector3.Lerp (nameTag.transform.position, calPosition, 0.1f);
+			nameTag.transform.localRotation = Quaternion.Lerp (nameTag.transform.localRotation, calRotation, 0.1f);
 		}
 	}
 }
