@@ -21,6 +21,8 @@ var eyeFinalQ3 = new THREE.Quaternion();		// for others & only Y axis
 
 var toLookAtCenter = true;
 
+var updateInterval = 0;
+
 function onDeviceOrientationChangeEvent(evt) {
 	deviceOrientation = evt;
 }
@@ -835,6 +837,8 @@ THREE.DeviceControls = function ( camera, worldCenter ) {
 		if (scope.enabled === false) return;
 		if (scope.freeze) return;
 
+		updateInterval += delta;
+
 		// VR_Control
 			// for ( var i = 0; i < scope.vrInputs.length; i ++ ) {
 			// 	var vrInput = scope.vrInputs[ i ];
@@ -912,27 +916,29 @@ THREE.DeviceControls = function ( camera, worldCenter ) {
 
 		////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////
-		//WEB_SOCKET
-		if(trulyFullyStart){
-			var msg = {
-				'username': username,
-				'index': whoIamInLife,
-				'type': 'three',
-				'posX': yawObject.position.x,
-				'posY': yawObject.position.y,
-				'posZ': yawObject.position.z,
-				'quaX': eyeFinalQ2._x,
-				'quaY': eyeFinalQ2._y,
-				'quaZ': eyeFinalQ2._z,
-				'quaW': eyeFinalQ2._w
-			};
-			socket.emit('update position', msg);
-			// if(ws){
-			// 	sendMessage( JSON.stringify(msg) );
-			// 	// console.log('A msg sent by DeviceControls when updating.');
-			// }
+		//WEB_SOCKET		
+		console.log(updateInterval);
+		
+		if(updateInterval > 110)
+		{
+			updateInterval = 0;
 
-			// console.log(yawObject.position.x + ", " + yawObject.position.z);
+			if(trulyFullyStart){
+				var msg = {
+					'username': username,
+					'index': whoIamInLife,
+					'type': 'three',
+					'posX': yawObject.position.x,
+					'posY': yawObject.position.y,
+					'posZ': yawObject.position.z,
+					'quaX': eyeFinalQ2._x,
+					'quaY': eyeFinalQ2._y,
+					'quaZ': eyeFinalQ2._z,
+					'quaW': eyeFinalQ2._w
+				};
+				socket.emit('update position', msg);
+				// console.log(yawObject.position.x + ", " + yawObject.position.z);
+			}
 		}
 
 		// different than ws, socket.io's broadcast won't send back to the sender
