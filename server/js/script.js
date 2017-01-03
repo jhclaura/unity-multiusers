@@ -70,7 +70,6 @@ var keyIsPressed;
 
 // init();				// Init after CONNECTION
 superInit();			// init automatically
-
 // connectSocket();		// Init after superInit
 
 ///////////////////////////////////////////////////////////
@@ -175,27 +174,6 @@ function superInit(){
 		    console.log( "All loaded!" );
 		};
 
-	// br_mat_loadingManager = new THREE.LoadingManager();
-	// 	// after loading all the textures for BATHROOM, create bathroom
-	// 	br_mat_loadingManager.onLoad = function () {
-	// 	    console.log( "Ready to load BATHROOM!" );
-
-	// 		loadModelBathroomsV2( "models/bathroom/b_door.js",
-	// 							  "models/bathroom/b_sides.js",
-	// 							  "models/bathroom/b_floor.js",
-	// 							  "models/bathroom/b_smallStuff.js",
-	// 							  "models/bathroom/b_smallWhite.js",
-	// 							  "models/bathroom/paper_bottom.js",
-	// 							  "models/bathroom/paper_top.js",
-	// 							  "models/bathroom2.js",
-	// 							  "models/poster.js" );
-	// 	};
-
-	// starLoadingManager = new THREE.LoadingManager();
-	// 	starLoadingManager.onLoad = function () {
-	// 	    CreateStars();
-	// 	};
-
 	personBody = new THREE.BoxGeometry(.5,2,.5);
 	transY(personBody,-1.5);
 	personHead = new THREE.BoxGeometry(1,1,1);
@@ -207,14 +185,6 @@ function superInit(){
 	stats.domElement.children[ 0 ].style.background = "transparent";
 	stats.domElement.children[ 0 ].children[1].style.display = "none";
 	container.appendChild( stats.domElement );
-
-	// physics_stats = new Stats();
-	// physics_stats.domElement.style.position = 'absolute';
-	// physics_stats.domElement.style.bottom = '55px';
-	// physics_stats.domElement.style.zIndex = 100;
-	// physics_stats.domElement.children[ 0 ].style.background = "transparent";
-	// physics_stats.domElement.children[ 0 ].children[1].style.display = "none";
-	// container.appendChild( physics_stats.domElement );
 	
 	// EVENTS
 	window.addEventListener('resize', onWindowResize, false);
@@ -310,7 +280,6 @@ function update()
 	controls.update( Date.now() - time );
 
 	var dt = clock.getDelta();
-
 
 	// eyeRay!
 		var directionCam = controls.getDirection(1).clone();
