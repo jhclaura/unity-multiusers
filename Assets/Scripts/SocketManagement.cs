@@ -10,59 +10,65 @@ using UnityEngine.VR;
 
 public class SocketManagement : MonoBehaviour {
 
+	[Header("Socket Settings")]
+	public string networkAddress;
+	public string portNumber;
+	public string myName = string.Empty;
+	public bool isConnected = false;
+	public int whoIamInLife;
+	[HideInInspector]
+	public bool isViveVR;
+	public SocketManager Manager;
+
+	[Header("UI Settings")]
+	public GameObject menuCanvas;
+	public Button sendButton;
+	public InputField msgInput;
+
+	[Header("Object Assignment")]
+	public GameObject worldCanvas;
+	public GameObject simplePlayerPrefab;
+	public GameObject nameTagPrefab;
+
 	private enum ChatStates
 	{
 		Login,
 		Chat
 	}
+	private ChatStates State;
+	private string message = string.Empty;
+	private string chatLog = string.Empty;
+	private GameObject mainCamera;
 
-	public bool viveVR;
-	public SocketManager Manager;
-	ChatStates State;
-	public string networkAddress;
-	public string portNumber;
-	public string myName = string.Empty;
-	string message = string.Empty;
-	string chatLog = string.Empty;
+	private Dictionary<int, GameObject> playerDict = new Dictionary<int, GameObject>();
+	private bool updatePreviousPlayer = false;
 
-	public Button sendButton;
-	public InputField msgInput;
-
-	public bool connected = false;
-
-	public int whoIamInLife;
-
-	public GameObject simplePlayerPrefab;
-	GameObject selfPlayer;
-	PlayerManagement selfPlayerMgmt;
-	GameObject mainCamera;
-
-	Dictionary<int, GameObject> playerDict = new Dictionary<int, GameObject>();
-	bool updatePreviousPlayer = false;
-
-	public GameObject menuCanvas;
-	public GameObject worldCanvas;
-	public GameObject nameTagPrefab;
 
 	void Awake() {
-		if (VRSettings.enabled) {
-			viveVR = true;
-		} else {
-			viveVR = false;
+		if (VRSettings.enabled)
+		{
+			isViveVR = true;
+		}
+		else
+		{
+			isViveVR = false;
 		}
 	}
 
-
-	// Use this for initialization
 	void Start () {
-		mainCamera = Camera.main.gameObject;
+		if (Camera.main.gameObject != null)
+		{
+			mainCamera = Camera.main.gameObject;
+		}
+		else {
+			mainCamera = null;
+		}
 
 		State = ChatStates.Login;
 
 		// Socket
 		SocketOptions options = new SocketOptions ();
 		options.AutoConnect = false;
-
 		Manager = new SocketManager (new Uri("http://"+networkAddress+":"+portNumber+"/socket.io/"), options);
 
 		// Setup Events
@@ -104,10 +110,9 @@ public class SocketManagement : MonoBehaviour {
 	void SetUserName()
 	{
 		string u_n = msgInput.textComponent.text;
-		myName = u_n;
 		if (string.IsNullOrEmpty (u_n))
 			u_n = "Anonymous";
-		
+		myName = u_n;
 		State = ChatStates.Chat;
 		Manager.Socket.Emit ("new player", u_n);
 	}
@@ -124,34 +129,25 @@ public class SocketManagement : MonoBehaviour {
 	#region SocketIO Evenets
 	void OnLogin(Socket socket, Packet packet, params object[] args)
 	{
-		connected = true;
+		isConnected = true;
 
 		Dictionary<string, object> data = args [0] as Dictionary<string, object>;
 		whoIamInLife = GetInt (data["index"]);
 		int n_p = GetInt (data["numPlayers"]);
-		Debug.Log("Connected to IO server! player total num: " + n_p);
+		Debug.Log("Connected to Socket Server! I'm #" + whoIamInLife + " in total " + n_p + " players");
 
-		// disable main camera
-		mainCamera.SetActive (false);
+		// disable main camera, if any
+		if(mainCamera)
+			mainCamera.SetActive (false);
 
 		// create player SELF
-		selfPlayer = Instantiate(simplePlayerPrefab);
-		selfPlayer.name = "ME #"+whoIamInLife + " " + myName;
-		selfPlayerMgmt = selfPlayer.GetComponent<PlayerManagement> ();
+		GameObject selfPlayer = Instantiate(simplePlayerPrefab);
+		selfPlayer.name = "ME #" + whoIamInLife + " " + myName;
+		PlayerManagement selfPlayerMgmt = selfPlayer.GetComponent<PlayerManagement> ();
 		selfPlayerMgmt.socketManagement = this;
 		selfPlayerMgmt.nameTag = Instantiate(nameTagPrefab);
 		selfPlayerMgmt.nameTag.transform.SetParent (worldCanvas.transform);
-
-		// move to PlayerManagement
-		/*
-		selfPlayerMgmt.color = new Color ();
-		selfPlayerMgmt.whoIam = whoIamInLife;
-		selfPlayerMgmt.username = myName;
-		selfPlayerMgmt.nameTag.name = selfPlayerMgmt.username + " name tag";
-		selfPlayerMgmt.nameTag.GetComponent<Text> ().text = myName;
-		*/
 		selfPlayerMgmt.InitPlayer(whoIamInLife, myName);
-
 		selfPlayerMgmt.OnStartLocalPlayer ();
 
 		// add to dict
@@ -169,15 +165,6 @@ public class SocketManagement : MonoBehaviour {
 		//msg.Add ("color", selfPlayerMgmt.color);
 		msg.Add ("username", myName);
 		Manager.Socket.Emit("create new player", msg);
-
-		/*
-		Dictionary<string, object>[] allplayers = data ["allPlayers"] as Dictionary<string, object>[];
-		Debug.Log(allplayers.Length);
-		for (int i = 0; i < allplayers.Length; i++) {
-//			Dictionary<string, string> a_p = allplayers[i] as Dictionary<string, string>;
-			Debug.Log("Add history player: " + allplayers[i]["username"]);
-		}
-		*/
 	}
 
 	void OnNewMessage(Socket socket, Packet packet, params object[] args)
@@ -208,16 +195,7 @@ public class SocketManagement : MonoBehaviour {
 		newGuyMgmt.nameTag = Instantiate(nameTagPrefab);
 		newGuyMgmt.nameTag.transform.SetParent (worldCanvas.transform);
 		newGuyMgmt.nameTag.transform.position = newPlayerStartPos;
-
-		// move to PlayerManagement
 		newGuyMgmt.InitPlayer(p_index, username);
-		/*
-		//newGuyMgmt.color = (Color) data ["color"];
-		newGuyMgmt.whoIam = GetInt(data["index"]);
-		newGuyMgmt.username = data ["username"] as string;
-		newGuyMgmt.nameTag.name = newGuyMgmt.username + " name tag";
-		newGuyMgmt.nameTag.GetComponent<Text> ().text = newGuyMgmt.username;
-		*/
 
 		playerDict.Add (newGuyMgmt.whoIam, newGuy);
 
@@ -265,36 +243,25 @@ public class SocketManagement : MonoBehaviour {
 		if (!updatePreviousPlayer) {
 			Dictionary<string, object> data = args [0] as Dictionary<string, object>;
 			List<object> allplayers = data ["allPlayers"] as List<object>;
-			//Debug.Log(allplayers.Count);
 
-			for (int i=0; i<allplayers.Count; i++) {
+			for (int i=0; i<allplayers.Count; i++)
+			{
 				Dictionary<string, object> a_p = allplayers[i] as Dictionary<string, object>;
+				int p_index = GetInt (a_p ["index"]);
+				string p_name = a_p ["username"] as string;
 				Vector3 oldPlayerStartPos = new Vector3(
 					GetFloat(a_p["startX"]), GetFloat(a_p["startY"]), GetFloat(a_p["startZ"])
 				);
 				GameObject oldGuy = Instantiate (simplePlayerPrefab);
 				oldGuy.transform.position = oldPlayerStartPos;
-				PlayerManagement oldGuyMgmt = oldGuy.GetComponent<PlayerManagement> ();
-				int p_index = GetInt (a_p ["index"]);
-				string p_name = a_p ["username"] as string;
 				oldGuy.name = "Player #"+ p_index + " " + p_name;
-
+				PlayerManagement oldGuyMgmt = oldGuy.GetComponent<PlayerManagement> ();
 				oldGuyMgmt.nameTag = Instantiate(nameTagPrefab);
 				oldGuyMgmt.nameTag.transform.SetParent (worldCanvas.transform);
 				oldGuyMgmt.nameTag.transform.position = oldPlayerStartPos;
-
-				// Move to PlayerManagement
 				oldGuyMgmt.InitPlayer( p_index, p_name);
-				/*
-				//newGuyMgmt.color = (Color) data ["color"];
-				oldGuyMgmt.whoIam = GetInt(a_p["index"]);
-				oldGuyMgmt.username = a_p ["username"] as string;
-				oldGuyMgmt.nameTag.name = oldGuyMgmt.username + " name tag";
-				oldGuyMgmt.nameTag.GetComponent<Text> ().text = oldGuyMgmt.username;
-				*/
 
 				playerDict.Add (oldGuyMgmt.whoIam, oldGuy);
-
 				Debug.Log("Add history player: " + a_p["username"]);
 			}
 			updatePreviousPlayer = true;

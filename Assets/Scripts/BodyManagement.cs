@@ -4,22 +4,27 @@ using System.Collections.Generic;
 
 public class BodyManagement : MonoBehaviour {
 
+	[HideInInspector]
 	public SocketManagement socketManagement;
-	public GameObject eyeCam;
+	[HideInInspector]
 	public GameObject body;
+	[HideInInspector]
+	public GameObject eyeCam;
+	[HideInInspector]
 	public GameObject viveCam;
-
-	Dictionary<string, object> trans;
-
+	[HideInInspector]
 	public GameObject nameTag;
 
-	// Use this for initialization
-	void Start () {
+	private Dictionary<string, object> trans;
+
+
+	void Start ()
+	{
 		trans = new Dictionary<string, object>();
 		trans.Add ("index", socketManagement.whoIamInLife);
 		trans.Add ("type", "unity");
 
-		if (socketManagement.viveVR)
+		if (socketManagement.isViveVR)
 		{
 			trans ["type"] = "vive";
 			trans.Add ("posX", viveCam.transform.position.x);
@@ -45,13 +50,13 @@ public class BodyManagement : MonoBehaviour {
 			
 	}
 	
-	// Update is called once per frame
 	void Update () {
-		if (!socketManagement.connected) // || !viveCam.activeSelf
+		if (!socketManagement.isConnected) // || !viveCam.activeSelf
 			return;
 
-		if (socketManagement.viveVR)
+		if (socketManagement.isViveVR)
 		{
+			// Send transform data to Server
 			trans ["posX"] = viveCam.transform.position.x;
 			trans ["posY"] = viveCam.transform.position.y;
 			trans ["posZ"] = viveCam.transform.position.z;
@@ -62,6 +67,7 @@ public class BodyManagement : MonoBehaviour {
 			trans ["quaZ"] = viveCam.transform.rotation.z;
 			trans ["quaW"] = viveCam.transform.rotation.w;
 
+			// Update self object transform
 			body.transform.position = new Vector3 (
 				viveCam.transform.position.x, 
 				viveCam.transform.position.y-1.5f,
@@ -69,11 +75,13 @@ public class BodyManagement : MonoBehaviour {
 			);
 			body.transform.localEulerAngles = new Vector3 (0f, viveCam.transform.eulerAngles.y, 0f);
 
+			Debug.Log (viveCam.transform.position);
 			UpdateNameTag (viveCam.transform.position, body.transform.localEulerAngles);
-		} 
+		}
+		// GVR
 		else 
 		{
-			// GVR
+			// Send transform data to Server
 			trans ["posX"] = transform.position.x;
 			trans ["posY"] = transform.position.y;
 			trans ["posZ"] = transform.position.z;
@@ -84,10 +92,12 @@ public class BodyManagement : MonoBehaviour {
 			trans ["quaZ"] = eyeCam.transform.rotation.z;
 			trans ["quaW"] = eyeCam.transform.rotation.w;
 
+			// Update self object transform
 			body.transform.localEulerAngles = new Vector3 (0f, eyeCam.transform.eulerAngles.y, 0f);
 
 			// MOVE BY PRESSING SCREEN OR MOUSE
-			if (Input.touchCount > 0 || Input.GetMouseButton(0)){
+			if (Input.touchCount > 0 || Input.GetMouseButton(0))
+			{
 				//Debug.Log ("touch!");
 				transform.Translate(body.transform.forward * Time.deltaTime);
 			}
@@ -96,12 +106,12 @@ public class BodyManagement : MonoBehaviour {
 		}
 
 		socketManagement.Manager.Socket.Emit ("update position", trans);
-
 	}
 
 	void UpdateNameTag(Vector3 pos, Vector3 eulerRot){
+		
 		if (nameTag) {
-			if (socketManagement.viveVR)
+			if (socketManagement.isViveVR)
 				pos.y += 0.5f;
 			else
 				pos.y += 1.8f;

@@ -4,57 +4,59 @@ using System.Collections;
 
 public class PlayerManagement : MonoBehaviour {
 
+	[Header("Player Attritubes")]
 	public Color color;
 	public int whoIam;
 	public string username = "Anonymous";
-
+	[Header("Object Assignment")]
 	public GameObject player;
 	public GameObject playerHead;
 	public GameObject playerBody;
-	public GameObject eyeCamera;
-	public BodyManagement bodyMgmt;
+	public GameObject eyeCamera; 	// GVR
+	public GameObject ViveRig;	// Vive
+	public GameObject ViveCam;	// Vive
+	//public BodyManagement bodyMgmt;
+	[HideInInspector]
 	public SocketManagement socketManagement;
-	public GameObject ViveCamRig;
-
+	[HideInInspector]
 	public GameObject nameTag;
 
-	// Use this for initialization
-	void Start () {
+	private BodyManagement bodyMgmt;
 
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
+	void Start()
+	{
+		
 	}
 
-	public void InitPlayer(int _index, string _name) {
+	public void InitPlayer(int _index, string _name)
+	{
 		color = new Color ();
 
 		whoIam = _index;
 		username = _name;
 		nameTag.name = username + " name tag";
 		nameTag.GetComponent<Text> ().text = username;
-
-		/* ref
-		selfPlayerMgmt.nameTag = Instantiate(nameTagPrefab);
-		selfPlayerMgmt.nameTag.transform.SetParent (worldCanvas.transform);		
-		*/
 	}
-
-	public void OnStartLocalPlayer() {
-		playerHead.SetActive (false);
-		bodyMgmt.enabled = true;
+		
+	public void OnStartLocalPlayer()
+	{
+		playerHead.SetActive (false);	// no need for hear cuz can't see self
+		bodyMgmt = player.GetComponent<BodyManagement> ();
+		bodyMgmt.enabled = true;		// so to send transformation to Server
 		bodyMgmt.socketManagement = socketManagement;
-
+		bodyMgmt.body = playerBody;
+		bodyMgmt.eyeCam = eyeCamera;
+		bodyMgmt.viveCam = ViveCam;
 		bodyMgmt.nameTag = nameTag;
 
-		if (socketManagement.viveVR) {
-			ViveCamRig.SetActive(true);
-		} else {
+		if (socketManagement.isViveVR)
+		{
+			ViveRig.SetActive(true);
+		} 
+		else
+		{
 			Vector3 startPosition = new Vector3 (Random.value*10f, 0f, Random.value*10f);
 			player.transform.position = startPosition;
-
 			//eyeCamera.tag = "MainCamera";
 			eyeCamera.SetActive (true);
 			GvrViewer.Create ();
@@ -104,7 +106,8 @@ public class PlayerManagement : MonoBehaviour {
 			playerBody.transform.rotation = rotation;
 		}
 
-		if (nameTag) {
+		if (nameTag)
+		{
 			position.y += 1.8f;
 			nameTag.transform.position = position;
 			nameTag.transform.localRotation = rotation;
