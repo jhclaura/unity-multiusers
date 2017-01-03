@@ -13,8 +13,10 @@ public class SocketManagement : MonoBehaviour {
 	[Header("Socket Settings")]
 	public string networkAddress;
 	public string portNumber;
+	[HideInInspector]
 	public string myName = string.Empty;
 	public bool isConnected = false;
+	[HideInInspector]
 	public int whoIamInLife;
 	[HideInInspector]
 	public bool isViveVR;
