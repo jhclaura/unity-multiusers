@@ -169,6 +169,9 @@ public class SocketManagement : MonoBehaviour {
 
 	void OnNewMessage(Socket socket, Packet packet, params object[] args)
 	{
+		if (!isConnected)
+			return;
+		
 		Dictionary<string, object> data = args [0] as Dictionary<string, object>;
 		var username = data ["username"] as string;
 		var msg = data["message"] as string;
@@ -177,6 +180,9 @@ public class SocketManagement : MonoBehaviour {
 
 	void OnPlayerJoined(Socket socket, Packet packet, params object[] args)
 	{
+		if (!isConnected)
+			return;
+		
 		Dictionary<string, object> data = args [0] as Dictionary<string, object>;
 		int numP = GetInt(data["numPlayers"]);
 		var username = data ["username"] as string;
@@ -204,6 +210,9 @@ public class SocketManagement : MonoBehaviour {
 		
 	void OnPlayerLeft(Socket socket, Packet packet, params object[] args)
 	{
+		if (!isConnected)
+			return;
+		
 		Dictionary<string, object> data = args [0] as Dictionary<string, object>;
 		var username = data ["username"] as string;
 		int numP = GetInt(data["numPlayers"]);
@@ -211,6 +220,9 @@ public class SocketManagement : MonoBehaviour {
 
 		// remove player
 		if(playerDict.ContainsKey(leftIndex)){
+			// destroy nameTag first
+			PlayerManagement p_mgmt = playerDict[leftIndex].GetComponent<PlayerManagement>();
+			Destroy (p_mgmt.nameTag);
 			Destroy (playerDict[leftIndex]);
 			playerDict.Remove (leftIndex);
 		}
@@ -219,6 +231,9 @@ public class SocketManagement : MonoBehaviour {
 
 	void OnUpdatePosition(Socket socket, Packet packet, params object[] args)
 	{
+		if (!isConnected)
+			return;
+		
 		Dictionary<string, object> data = args [0] as Dictionary<string, object>;
 		//string username = data ["username"] as string;
 		string transType = data ["type"] as string;
@@ -230,7 +245,6 @@ public class SocketManagement : MonoBehaviour {
 				GetFloat(data["quaX"]), GetFloat(data["quaY"]), GetFloat(data["quaZ"]), GetFloat(data["quaW"])
 			);
 		}
-
 		/*
 		Debug.Log("Player: " + username + " position x: " + data ["posX"]
 			+ ", y: " + data ["posY"]
@@ -240,6 +254,9 @@ public class SocketManagement : MonoBehaviour {
 
 	void OnUpdateHistory(Socket socket, Packet packet, params object[] args)
 	{
+		if (!isConnected)
+			return;
+		
 		if (!updatePreviousPlayer) {
 			Dictionary<string, object> data = args [0] as Dictionary<string, object>;
 			List<object> allplayers = data ["allPlayers"] as List<object>;

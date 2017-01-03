@@ -54,9 +54,32 @@ public class BodyManagement : MonoBehaviour {
 		if (!socketManagement.isConnected) // || !viveCam.activeSelf
 			return;
 
+		// UPDATE: self object transform
 		if (socketManagement.isViveVR)
 		{
-			// Send transform data to Server
+			body.transform.position = new Vector3 (
+				viveCam.transform.position.x, 
+				viveCam.transform.position.y-1.5f,
+				viveCam.transform.position.z
+			);
+			body.transform.localEulerAngles = new Vector3 (0f, viveCam.transform.eulerAngles.y, 0f);
+			UpdateNameTag (viveCam.transform.position, body.transform.localEulerAngles);
+		}
+		else 
+		{
+			// MOVE BY PRESSING SCREEN OR MOUSE
+			if (Input.touchCount > 0 || Input.GetMouseButton(0))
+			{
+				//Debug.Log ("touch!");
+				transform.Translate(body.transform.forward * Time.deltaTime);
+			}
+			body.transform.localEulerAngles = new Vector3 (0f, eyeCam.transform.eulerAngles.y, 0f);
+			UpdateNameTag (transform.position, body.transform.localEulerAngles);
+		}
+
+		// SEND: transform data to Server
+		if (socketManagement.isViveVR)
+		{
 			trans ["posX"] = viveCam.transform.position.x;
 			trans ["posY"] = viveCam.transform.position.y;
 			trans ["posZ"] = viveCam.transform.position.z;
@@ -66,22 +89,9 @@ public class BodyManagement : MonoBehaviour {
 			trans ["quaY"] = viveCam.transform.rotation.y;
 			trans ["quaZ"] = viveCam.transform.rotation.z;
 			trans ["quaW"] = viveCam.transform.rotation.w;
-
-			// Update self object transform
-			body.transform.position = new Vector3 (
-				viveCam.transform.position.x, 
-				viveCam.transform.position.y-1.5f,
-				viveCam.transform.position.z
-			);
-			body.transform.localEulerAngles = new Vector3 (0f, viveCam.transform.eulerAngles.y, 0f);
-
-			Debug.Log (viveCam.transform.position);
-			UpdateNameTag (viveCam.transform.position, body.transform.localEulerAngles);
 		}
-		// GVR
-		else 
+		else
 		{
-			// Send transform data to Server
 			trans ["posX"] = transform.position.x;
 			trans ["posY"] = transform.position.y;
 			trans ["posZ"] = transform.position.z;
@@ -91,18 +101,6 @@ public class BodyManagement : MonoBehaviour {
 			trans ["quaY"] = eyeCam.transform.rotation.y;
 			trans ["quaZ"] = eyeCam.transform.rotation.z;
 			trans ["quaW"] = eyeCam.transform.rotation.w;
-
-			// Update self object transform
-			body.transform.localEulerAngles = new Vector3 (0f, eyeCam.transform.eulerAngles.y, 0f);
-
-			// MOVE BY PRESSING SCREEN OR MOUSE
-			if (Input.touchCount > 0 || Input.GetMouseButton(0))
-			{
-				//Debug.Log ("touch!");
-				transform.Translate(body.transform.forward * Time.deltaTime);
-			}
-
-			UpdateNameTag (transform.position, body.transform.localEulerAngles);
 		}
 
 		socketManagement.Manager.Socket.Emit ("update position", trans);
