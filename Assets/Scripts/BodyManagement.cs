@@ -59,7 +59,7 @@ public class BodyManagement : MonoBehaviour {
 		{
 			body.transform.position = new Vector3 (
 				viveCam.transform.position.x, 
-				viveCam.transform.position.y-1.5f,
+				viveCam.transform.position.y-1f,
 				viveCam.transform.position.z
 			);
 			body.transform.localEulerAngles = new Vector3 (0f, viveCam.transform.eulerAngles.y, 0f);
@@ -116,9 +116,9 @@ public class BodyManagement : MonoBehaviour {
 	void UpdateNameTag(Vector3 pos, Vector3 eulerRot){
 		
 		if (nameTag) {
-			if (socketManagement.isViveVR)
-				pos.y += 0.5f;
-			else
+			// if (socketManagement.isViveVR)
+			// 	pos.y += 0.5f;
+			// else
 				pos.y += 1.8f;
 			nameTag.transform.position = pos;
 			nameTag.transform.localEulerAngles = eulerRot;

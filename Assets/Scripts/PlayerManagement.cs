@@ -105,7 +105,7 @@ public class PlayerManagement : MonoBehaviour {
 		else
 		{
 			if (type == "vive")
-				realPosition.y -= 2f;
+				realPosition.y -= 1f;
 			/*
 			// Head
 			// if(playerHead.activeSelf)
